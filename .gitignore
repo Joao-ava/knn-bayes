@@ -208,4 +208,5 @@ __marimo__/
 
 
 # pasta ignorar
-./ignorar/*
+# pasta ignorar
+ignorar/
