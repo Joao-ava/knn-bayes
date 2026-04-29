@@ -37,11 +37,6 @@ Uso:
 #   • Distância Euclidiana
 #   • Distância Manhattan
 
-# (b) Classificador Bayesiano (Univariado) – Taís
-
-# * Treinar utilizando:
-#   • Função de densidade da distribuição normal univariada
-
 class KNN():
 
 
@@ -53,19 +48,6 @@ class KNN():
     def fit(self, X_train, y_train):
         self.X_train = X_train
         self.y_train = y_train
-
-    """
-    fit_bayes é um método auxiliar para o classificador bayesiano, mas como estamos focando no KNN, ele não é implementado aqui.
-    Ele pode ser implementado posteriormente se necessário.
-    """
-    def fit_bayes(self, X_train, y_train):
-        nsamples, nfeatures = X_train.shape
-        self._classes = np.unique(y_train)
-        nclasses = len(self._classes)
-
-        self.mean = np.zeros((nclasses,nfeatures),dtype=float)
-        self.var = np.zeros((nclasses,nfeatures),dtype=float)
-        self.prior = np.zeros(nclasses,dtype=float)
 
         
     """

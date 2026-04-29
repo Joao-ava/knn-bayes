@@ -83,3 +83,8 @@ Métricas:
 * Garantir padronização dos resultados
 * Validar métricas corretamente (classificação vs regressão)
 * Organizar código para reprodutibilidade
+
+
+## Dúvidas
+como igualar o numeros de linhas de y == 1 e y == 0, para depois fazer o treinamento?
+onde faço isso? dentro da classe? na main?
