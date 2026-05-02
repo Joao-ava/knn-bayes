@@ -3,7 +3,7 @@ import time
 from data import load_fraud_detection
 from data_preprocessing import DataPreprocessing
 from knn import KNN
-from naive_bayes import NaiveBayes
+from naive_bayes_multiclass import NaiveBayesMultiClass
 
 if __name__ == '__main__':
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     print("\nValores Reais:\n", y_test[:20])
 
     # Naive Bayes
-    modelo = NaiveBayes()
+    modelo = NaiveBayesMultiClass()
     modelo.fit(x_train, y_train)
     start_time = time.time()
     predictions = modelo.predict(x_test)
