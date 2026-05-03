@@ -25,7 +25,7 @@ def precision(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
 def recall(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     true_positive = np.sum((y_true == 1) & (y_pred == 1))
-    false_negative = np.sum((y_true == 0) & (y_pred == 1))
+    false_negative = np.sum((y_true == 1) & (y_pred == 0))
     total = true_positive + false_negative
     if total <= 0: # evitar divisão por zero
         return 0
@@ -55,7 +55,7 @@ def r2_score(y: np.ndarray, y_pred: np.ndarray):
 
 def r2_score_adjusted(y: np.ndarray, y_pred: np.ndarray, p: int = 1000):
     n = len(y)
-    total = (n - p - n)
+    total = (n - p - 1)
     if total <= 0: # evitar divisão por zero
         return 0
 
