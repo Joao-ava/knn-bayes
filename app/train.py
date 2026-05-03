@@ -119,5 +119,6 @@ def train_regressor_model(folds: int):
 
 
 if __name__ == '__main__':
-    # train_classification_model(5)
-    train_regressor_model(5)
+    k = 5
+    train_classification_model(k)
+    train_regressor_model(k)
