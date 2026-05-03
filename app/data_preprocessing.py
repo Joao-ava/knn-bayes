@@ -60,4 +60,19 @@ class DataPreprocessing:
             self.y[x_test]
         )
     
+    def shuffle(self, seed=42):
+        np.random.seed(seed)
+        idx = np.random.permutation(len(self.X))
+        return self.X[idx], self.y[idx]
+    
+    def select_by_correlation(self, k: int = 1000):
+        # Correlação de Pearson entre cada coluna de X e y
+        corrs = np.array([np.corrcoef(self.X[:, j], self.y)[0, 1] for j in range(self.X.shape[1])])
+        # Ordena pelo valor absoluto da correlação
+        idx = np.argsort(np.abs(corrs))[::-1][:k]
+        new_X = self.X[:, idx]
+        print(f'new_x: {new_X.shape}')
+        self.X = new_X
+        return self
+    
 
