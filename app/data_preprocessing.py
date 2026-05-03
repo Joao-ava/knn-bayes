@@ -30,11 +30,16 @@ class DataPreprocessing:
         self.X = np.array(X, dtype=float)
         self.y = np.array(y, dtype=float)
 
-    def fill_missing(self):
+    def fill_missing(self, method='mean'):
         """Substitui NaN pela média"""
-        col_means = np.nanmean(self.X, axis=0)
         inds = np.where(np.isnan(self.X))
-        self.X[inds] = np.take(col_means, inds[1])
+        if method == 'mean':
+            col_means = np.nanmean(self.X, axis=0)
+            self.X[inds] = np.take(col_means, inds[1])
+        elif method == 'median':
+            self.X[inds] = np.take(np.nanmedian(self.X, axis=0), inds[1])
+        else:
+            self.X[inds] = 0
         return self
 
     def normalize(self):
@@ -61,18 +66,66 @@ class DataPreprocessing:
         )
     
     def shuffle(self, seed=42):
+        """Retorna X e y em ordem aleatória"""
         np.random.seed(seed)
         idx = np.random.permutation(len(self.X))
         return self.X[idx], self.y[idx]
     
     def select_by_correlation(self, k: int = 1000):
-        # Correlação de Pearson entre cada coluna de X e y
-        corrs = np.array([np.corrcoef(self.X[:, j], self.y)[0, 1] for j in range(self.X.shape[1])])
+        """Seleciona as k colunas mais correlacionadas com y"""
+        # Correlação de Pearson entre cada coluna de X e y, com proteção para variância zero
+        y_std = np.std(self.y)
+        if y_std == 0 or not np.isfinite(y_std):
+            corrs = np.zeros(self.X.shape[1], dtype=float)
+        else:
+            corrs = np.zeros(self.X.shape[1], dtype=float)
+            for j in range(self.X.shape[1]):
+                x_col = self.X[:, j]
+                x_std = np.std(x_col)
+                if x_std == 0 or not np.isfinite(x_std):
+                    corrs[j] = 0.0
+                else:
+                    corr = np.corrcoef(x_col, self.y)[0, 1]
+                    corrs[j] = corr if np.isfinite(corr) else 0.0
+
+        corrs = np.nan_to_num(corrs, nan=0.0, posinf=0.0, neginf=0.0)
         # Ordena pelo valor absoluto da correlação
         idx = np.argsort(np.abs(corrs))[::-1][:k]
         new_X = self.X[:, idx]
         print(f'new_x: {new_X.shape}')
         self.X = new_X
         return self
-    
 
+    def balancing_class(self):
+        """Balanceamento de classes"""
+        y_counts = np.bincount(self.y)
+        min_count = np.min(y_counts)
+        self.y = np.where(y_counts < min_count, 0, self.y)
+        return self
+    
+    def oversample_minority(self):
+        """
+        Repete exemplos da classe 1 até igualar a quantidade da classe 0.
+        """
+        # Índices das classes
+        idx_class1 = np.where(self.y == 1)[0]
+        idx_class0 = np.where(self.y == 0)[0]
+
+        n_class1 = len(idx_class1)
+        n_class0 = len(idx_class0)
+
+        # Quantas vezes precisamos repetir a classe 1
+        reps = int(np.ceil(n_class0 / n_class1))
+
+        # Repete os índices da classe 1
+        idx_class1_oversampled = np.tile(idx_class1, reps)[:n_class0]
+
+        # Junta os índices
+        idx_final = np.concatenate([idx_class0, idx_class1_oversampled])
+        np.random.shuffle(idx_final)
+
+        # Novo dataset balanceado
+        X_balanced = self.X[idx_final]
+        y_balanced = self.y[idx_final].astype(int)  # garante que seja inteiro
+
+        return X_balanced, y_balanced

@@ -53,7 +53,7 @@ def r2_score(y: np.ndarray, y_pred: np.ndarray):
     return 1 - (value)
 
 
-def r2_score_adjusted(y: np.ndarray, y_pred: np.ndarray, p: int = 1000):
+def r2_score_adjusted(y: np.ndarray, y_pred: np.ndarray, p: int = 4991):
     n = len(y)
     total = (n - p - 1)
     if total <= 0: # evitar divisão por zero

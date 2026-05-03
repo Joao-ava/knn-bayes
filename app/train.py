@@ -32,7 +32,7 @@ def train_classification_model(folds: int):
     model_metrics = defaultdict(dict)
     X, y = load_fraud_detection()
     preprocessing = DataPreprocessing(X, y)
-    X, y = preprocessing.fill_missing().normalize().shuffle()
+    X, y = preprocessing.fill_missing().oversample_minority().normalize().shuffle()
 
     for model_name, Model in classification_models:
         metrics = defaultdict(list)
@@ -78,11 +78,13 @@ def train_regressor_model(folds: int):
     model_metrics = defaultdict(dict)
     X, y = load_santander()
     preprocessing = DataPreprocessing(X, y)
-    X, y = preprocessing.select_by_correlation(1000).normalize().shuffle()
+    X, y = preprocessing.select_by_correlation(100).shuffle()
     print(X.shape)
+    _, columns_size = X.shape
 
     for model_name, Model in regression_models:
         metrics = defaultdict(list)
+        print(model_name)
         for train_idx, test_idx in kfold(X, folds):
             X_train = X[train_idx]
             y_train = y[train_idx]
@@ -101,9 +103,8 @@ def train_regressor_model(folds: int):
             time_pred = time.time() - start_time_pred
             metrics['time_pred'].append(time_pred)
 
-            for metric in regression_metrics:
-                metric_name = metric.__name__
-                metrics[metric_name].append(metric(y_test, y_pred))
+            metrics['r2_score'].append(r2_score(y_test, y_pred))
+            metrics['r2_score_adjusted'].append(r2_score_adjusted(y_test, y_pred, p=columns_size))
 
 
         model_metrics[model_name]['mean-time_fit'] = np.mean(metrics['time_fit'])
@@ -112,6 +113,7 @@ def train_regressor_model(folds: int):
         model_metrics[model_name]['std-time_pred'] = np.std(metrics['time_pred'])
         for metric in regression_metrics:
             metric_name = metric.__name__
+            print(metric_name)
             model_metrics[model_name][f'mean-{metric_name}'] = np.mean(metrics[metric_name])
             model_metrics[model_name][f'std-{metric_name}'] = np.std(metrics[metric_name])
 
