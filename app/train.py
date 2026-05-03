@@ -55,13 +55,14 @@ def train_classification_model(folds: int):
             metrics['time_pred'].append(time_pred)
 
             for metric in classification_metrics:
-                print(metric)
                 metric_name = metric.__name__
                 metrics[metric_name].append(metric(y_test, y_pred))
 
 
         model_metrics[model_name]['mean-time_fit'] = np.mean(metrics['time_fit'])
+        model_metrics[model_name]['std-time_fit'] = np.std(metrics['time_fit'])
         model_metrics[model_name]['mean-time_pred'] = np.mean(metrics['time_pred'])
+        model_metrics[model_name]['std-time_pred'] = np.std(metrics['time_pred'])
         for metric in classification_metrics:
             metric_name = metric.__name__
             model_metrics[model_name][f'mean-{metric_name}'] = np.mean(metrics[metric_name])
@@ -101,13 +102,14 @@ def train_regressor_model(folds: int):
             metrics['time_pred'].append(time_pred)
 
             for metric in regression_metrics:
-                print(metric)
                 metric_name = metric.__name__
                 metrics[metric_name].append(metric(y_test, y_pred))
 
 
         model_metrics[model_name]['mean-time_fit'] = np.mean(metrics['time_fit'])
+        model_metrics[model_name]['std-time_fit'] = np.std(metrics['time_fit'])
         model_metrics[model_name]['mean-time_pred'] = np.mean(metrics['time_pred'])
+        model_metrics[model_name]['std-time_pred'] = np.std(metrics['time_pred'])
         for metric in regression_metrics:
             metric_name = metric.__name__
             model_metrics[model_name][f'mean-{metric_name}'] = np.mean(metrics[metric_name])
