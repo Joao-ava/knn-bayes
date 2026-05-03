@@ -18,7 +18,7 @@ def kfold(X, k_folds):
   
     idxs = np.arange(n_samples)
     fold_sizes = np.full(k_folds, n_samples // k_folds, dtype=int)
-    fold_sizes[:n_samples % k_folds] =+ 1
+    fold_sizes[:n_samples % k_folds] += 1
   
     current = 0
     results = []
