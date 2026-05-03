@@ -37,12 +37,11 @@ Uso:
 #   • Distância Euclidiana
 #   • Distância Manhattan
 
-class KNN():
-
-
-    def __init__(self,k=5, metric='euclidean'):
+class KNN:
+    def __init__(self, k=5, metric='euclidean', task='classification'):
         self.k = k
         self.metric = metric  # Métrica padrão, pode ser 'euclidean' ou 'manhattan'
+        self.task = task
 
 
     def fit(self, X_train, y_train):
@@ -85,10 +84,14 @@ class KNN():
         k_indices = np.argsort(distances)[:self.k]
         k_nearest_labels = [self.y_train[i] for i in k_indices]
         
-        
-        unique, counts = np.unique(k_nearest_labels,
-                                  return_counts=True)
-        return unique[np.argmax(counts)]
+        if self.task == "classification": #voto majoritário
+            unique, counts = np.unique(k_nearest_labels, 
+                                       return_counts=True)
+            return unique[np.argmax(counts)]
+        elif self.task=="regression": #media
+            return np.mean(k_nearest_labels)
+        else:  
+            raise ValueError("Task must be either ´classification´ or ´regression´")     
      
     
     def predict(self,X_test):
