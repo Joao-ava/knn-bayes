@@ -39,7 +39,7 @@ def load_santander():
     Retorno: X (features) com shape (n, n_features), y (target) com shape (n,)
     """
     filepath = DATA_PATH / 'santander_transaction.pq'
-    
+
     # Ler o arquivo Parquet usando pyarrow
     table = pq.read_table(filepath)
     
@@ -51,7 +51,8 @@ def load_santander():
     # Assumindo que a última coluna é o target
     columns = list(X.keys())
     y = np.array(X[columns[-1]])
-    X = np.array([X[col] for col in columns[:-1]]).T
+    # ignorando a coluna de ID
+    X = np.array([X[col] for col in columns[1:-1]]).T
     
     return X, y
 

@@ -1,6 +1,19 @@
 import numpy as np
 
+
 def kfold(X, k_folds):
+    """
+    Faz a divisão do conjunto de dados k vezes
+    A cada K vezes dendo uma parte diferente do conjunto sendo
+    o conjunto de teste
+
+    Exemplo
+        for train_idx, test_idx in kfold(X, 4):
+            X_train = X[train_idx]
+            y_train = y[train_idx]
+            X_test = X[test_idx]
+            y_test = y[test_idx]
+    """
     n_samples = len(X)
   
     idxs = np.arange(n_samples)
