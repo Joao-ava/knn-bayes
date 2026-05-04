@@ -80,7 +80,7 @@ def train_regressor_model(folds: int):
     model_metrics = defaultdict(dict)
     X, y = load_santander()
     preprocessing = DataPreprocessing(X, y)
-    X, y = preprocessing.select_by_correlation(100).shuffle()
+    X, y = preprocessing.fill_missing().normalize().select_by_correlation(100).shuffle()
     print(X.shape)
     _, columns_size = X.shape
 
@@ -115,7 +115,6 @@ def train_regressor_model(folds: int):
         model_metrics[model_name]['std-time_pred'] = np.std(metrics['time_pred'])
         for metric in regression_metrics:
             metric_name = metric.__name__
-            print(metric_name)
             model_metrics[model_name][f'mean-{metric_name}'] = np.mean(metrics[metric_name])
             model_metrics[model_name][f'std-{metric_name}'] = np.std(metrics[metric_name])
 
