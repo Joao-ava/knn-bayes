@@ -80,7 +80,7 @@ def train_regressor_model(folds: int):
     model_metrics = defaultdict(dict)
     X, y = load_santander()
     preprocessing = DataPreprocessing(X, y)
-    X, y = preprocessing.select_by_correlation(100).shuffle()
+    X, y = preprocessing.select_by_correlation(100).normalize().shuffle()
     print(X.shape)
     _, columns_size = X.shape
 
@@ -126,5 +126,5 @@ def train_regressor_model(folds: int):
 
 if __name__ == '__main__':
     k = 5
-    train_classification_model(k)
+    # train_classification_model(k)
     train_regressor_model(k)
