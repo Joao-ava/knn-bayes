@@ -97,10 +97,20 @@ class DataPreprocessing:
         return self
 
     def balancing_class(self):
-        """Balanceamento de classes"""
+        """Trunca cada classe para o tamanho da menor classe"""
+        self.y = self.y.astype(int)
         y_counts = np.bincount(self.y)
         min_count = np.min(y_counts)
-        self.y = np.where(y_counts < min_count, 0, self.y)
+
+        selected = []
+        for cls in np.unique(self.y):
+            idx = np.where(self.y == cls)[0]
+            selected.append(idx[:min_count])
+
+        idx_final = np.concatenate(selected)
+        np.random.shuffle(idx_final)
+        self.X = self.X[idx_final]
+        self.y = self.y[idx_final]
         return self
     
     def oversample_minority(self):
