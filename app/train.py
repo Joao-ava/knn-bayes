@@ -32,7 +32,7 @@ def train_classification_model(folds: int):
     model_metrics = defaultdict(dict)
     X, y = load_fraud_detection()
     preprocessing = DataPreprocessing(X, y)
-    X, y = preprocessing.fill_missing().oversample_minority().normalize().shuffle()
+    X, y = preprocessing.fill_missing().normalize().shuffle()
 
     for model_name, Model in classification_models:
         metrics = defaultdict(list)
@@ -42,10 +42,12 @@ def train_classification_model(folds: int):
             X_test = X[test_idx]
             y_test = y[test_idx]
 
+            X_bal, y_bal = DataPreprocessing(X_train, y_train).oversample_minority()
+
             model = Model()
 
             start_time_fit = time.time()
-            model.fit(X_train, y_train)
+            model.fit(X_bal, y_bal)
             time_fit = time.time() - start_time_fit
             metrics['time_fit'].append(time_fit)
 
