@@ -255,7 +255,7 @@ class MLP(Sequential):
             loss_function,
             activation=relu, output_activation=lambda x: x,
             epochs=100, lr=0.01, decay=0.5,
-            tolerance=1e-4, patience=5, clip_grad=False
+            tolerance=1e-4, patience=5, clip_grad=False, batch_size=None
             ):
         sizes = [input_size] + hidden_sizes + [output_size]
         layers = []
@@ -274,40 +274,55 @@ class MLP(Sequential):
         self.tolerance = tolerance
         self.patience = patience
         self.clip_grad = clip_grad
+        self.batch_size = batch_size
 
     def fit(self, X, y):
         best_loss = float("inf")
         lr = self.lr
+        epochs_no_improve = 0
+        n_samples = X.shape[0]
+        batch_size = self.batch_size or n_samples  # se None, usa full batch
         for epoch in range(self.epochs):
-            # Forward pass
-            y_pred = self(X)
-            # Compute loss
-            loss = self.loss_function(y, y_pred)
-            current_loss = loss.data
-            # Backward pass
-            self.zero_grad()
-            loss.backward()
-            # Update parameters
-            for p in self.parameters():
-                if self.clip_grad:
-                    p.grad = np.clip(p.grad, -5, 5)
+            indices = np.arange(n_samples)
+            np.random.shuffle(indices)
 
-                p.data -= self.lr * p.grad
+            epoch_loss = 0.0
+            for start in range(0, n_samples, batch_size):
+                end = start + batch_size
+                batch_idx = indices[start:end]
+                X_batch, y_batch = X[batch_idx], y[batch_idx]
 
-            # Checa melhora da loss
-            if best_loss - current_loss > self.tolerance:
-                best_loss = current_loss
-                epochs_no_improve = 0
-            else:
-                epochs_no_improve += 1
+                # Forward pass
+                y_pred = self(X_batch)
+                # Compute loss
+                loss = self.loss_function(y_batch, y_pred)
+                current_loss = loss.data
+                epoch_loss += loss.data
 
-            # Se não melhorar por "patience" épocas, reduz lr
-            if epochs_no_improve >= self.patience:
-                lr *= self.decay
-                epochs_no_improve = 0
+                # Backward pass
+                self.zero_grad()
+                loss.backward()
+                # Update parameters
+                for p in self.parameters():
+                    if self.clip_grad:
+                        p.grad = np.clip(p.grad, -5, 5)
 
-            # Mostrar loss e lr na mesma linha
-            print(f"Epoch {epoch+1}/{self.epochs} - Loss: {loss.data:.6f} - LR: {lr:.6f}", end="\r")
+                    p.data -= lr * p.grad
+
+                # Checa melhora da loss
+                if best_loss - current_loss > self.tolerance:
+                    best_loss = current_loss
+                    epochs_no_improve = 0
+                else:
+                    epochs_no_improve += 1
+
+                # Se não melhorar por "patience" épocas, reduz lr
+                if epochs_no_improve >= self.patience:
+                    lr *= self.decay
+                    epochs_no_improve = 0
+
+                # Mostrar loss e lr na mesma linha
+                print(f"Epoch {epoch+1}/{self.epochs} - Loss: {loss.data:.6f} - LR: {lr:.6f}", end="\r")
 
         print()
 
