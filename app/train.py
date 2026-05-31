@@ -3,21 +3,24 @@ import json
 import numpy as np
 from pprint import pprint
 from collections import defaultdict
-from data import load_fraud_detection, load_santander
+from data import load_fraud_detection, load_santander, load_melbourne_housing
 from regression import MultiLinearRegression
 from kfold import kfold
 from knn import KNN
 from metrics import accuracy, precision, recall, f1_score, r2_score, r2_score_adjusted
 from data_preprocessing import DataPreprocessing
 from naive_bayes import NaiveBayes, NaiveBayesMultiClass
-from nn import MLP, sigmoid, binary_cross_entropy, r2_loss
+from nn import MLP, sigmoid, binary_cross_entropy, r2_loss, mse
+from perceptron import Perceptron
 
 
 def make_classification_mlp():
     return MLP(
-        input_size=28, hidden_sizes=[64], output_size=1,
+        input_size=28, hidden_sizes=[64, 32], output_size=1,
         loss_function=binary_cross_entropy, output_activation=sigmoid,
-        epochs=100, lr=0.5, decay=0.9
+        epochs=80, lr=0.01, decay=0.8,
+        tolerance=1e-5, patience=4,
+        clip_grad=True, batch_size=256
     )
 
 
@@ -26,15 +29,18 @@ classification_models = [
     ('knn_manhattan', lambda : KNN(5, 'manhattan')),
     ('naive_bayes_univariado', lambda : NaiveBayes()),
     ('naive_bayes_multivariado', lambda : NaiveBayesMultiClass()),
+    ('perceptron', lambda : Perceptron()),
     ('mlp_classification', make_classification_mlp),
 ]
 classification_metrics = [accuracy, precision, recall, f1_score]
 
 def make_regression_mlp():
     return MLP(
-        input_size=100, hidden_sizes=[128, 64], output_size=1,
-        loss_function=r2_loss,
-        epochs=100, lr=0.01, decay=0.5 #, clip_grad=True
+        input_size=10, hidden_sizes=[64, 32], output_size=1,
+        loss_function=mse,
+        epochs=60, lr=0.01, decay=0.7,
+        tolerance=1e-5, patience=4,
+        clip_grad=True, batch_size=128
     )
 
 regression_models = [
@@ -61,9 +67,8 @@ def train_classification_model(folds: int):
             y_test = y[test_idx]
 
             X_bal, y_bal = DataPreprocessing(X_train, y_train).oversample_minority()
-            # X_bal, y_bal = X_train, y_train
-            # if model_name != 'mlp_classification':
-            X_bal, y_bal = DataPreprocessing(X_train, y_train).oversample_minority()
+            if model_name != 'mlp_classification':
+                X_bal, y_bal = X_train, y_train
 
             model = Model()
 
@@ -73,7 +78,8 @@ def train_classification_model(folds: int):
             metrics['time_fit'].append(time_fit)
 
             start_time_pred = time.time()
-            y_pred = model.predict(X_test)
+            y_pred_proba = model.predict(X_test).reshape(-1)
+            y_pred = (y_pred_proba >= 0.5).astype(int)
             time_pred = time.time() - start_time_pred
             metrics['time_pred'].append(time_pred)
 
@@ -99,9 +105,11 @@ def train_classification_model(folds: int):
 def train_regressor_model(folds: int):
     print('Começando treinamento do regressor')
     model_metrics = defaultdict(dict)
-    X, y = load_santander()
+    # X, y = load_santander()
+    X, y = load_melbourne_housing()
     preprocessing = DataPreprocessing(X, y)
-    X, y = preprocessing.fill_missing().normalize().select_by_correlation(100).shuffle()
+    # X, y = preprocessing.fill_missing().normalize().select_by_correlation(100).shuffle()
+    X, y = preprocessing.fill_missing().minmax_scale().normalize().shuffle()
     print(X.shape)
     _, columns_size = X.shape
 
@@ -115,14 +123,20 @@ def train_regressor_model(folds: int):
             y_test = y[test_idx]
 
             model = Model()
+            y_mean = np.mean(y_train)
+            y_std = np.std(y_train)
+            if y_std == 0:
+                y_std = 1
+            y_train_scaled = (y_train - y_mean) / y_std
 
             start_time_fit = time.time()
-            model.fit(X_train, y_train)
+            model.fit(X_train, y_train_scaled)
             time_fit = time.time() - start_time_fit
             metrics['time_fit'].append(time_fit)
 
             start_time_pred = time.time()
-            y_pred = model.predict(X_test)
+            y_pred_scaled = model.predict(X_test).reshape(-1)
+            y_pred = y_pred_scaled * y_std + y_mean
             time_pred = time.time() - start_time_pred
             metrics['time_pred'].append(time_pred)
 
