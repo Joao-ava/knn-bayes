@@ -10,6 +10,15 @@ from knn import KNN
 from metrics import accuracy, precision, recall, f1_score, r2_score, r2_score_adjusted
 from data_preprocessing import DataPreprocessing
 from naive_bayes import NaiveBayes, NaiveBayesMultiClass
+from nn import MLP, sigmoid, binary_cross_entropy, r2_loss
+
+
+def make_classification_mlp():
+    return MLP(
+        input_size=28, hidden_sizes=[64], output_size=1,
+        loss_function=binary_cross_entropy, output_activation=sigmoid,
+        epochs=100, lr=0.5, decay=0.9
+    )
 
 
 classification_models = [
@@ -17,13 +26,22 @@ classification_models = [
     ('knn_manhattan', lambda : KNN(5, 'manhattan')),
     ('naive_bayes_univariado', lambda : NaiveBayes()),
     ('naive_bayes_multivariado', lambda : NaiveBayesMultiClass()),
+    ('mlp_classification', make_classification_mlp),
 ]
 classification_metrics = [accuracy, precision, recall, f1_score]
+
+def make_regression_mlp():
+    return MLP(
+        input_size=100, hidden_sizes=[128, 64], output_size=1,
+        loss_function=r2_loss,
+        epochs=100, lr=0.01, decay=0.5 #, clip_grad=True
+    )
 
 regression_models = [
     ('knn_euclidean', lambda : KNN(25, 'euclidean', 'regression')),
     ('knn_manhattan', lambda : KNN(25, 'manhattan', 'regression')),
     ('linear_regression', lambda : MultiLinearRegression()),
+    ('mlp_regression', make_regression_mlp),
 ]
 regression_metrics = [r2_score, r2_score_adjusted]
 
@@ -42,6 +60,9 @@ def train_classification_model(folds: int):
             X_test = X[test_idx]
             y_test = y[test_idx]
 
+            X_bal, y_bal = DataPreprocessing(X_train, y_train).oversample_minority()
+            # X_bal, y_bal = X_train, y_train
+            # if model_name != 'mlp_classification':
             X_bal, y_bal = DataPreprocessing(X_train, y_train).oversample_minority()
 
             model = Model()

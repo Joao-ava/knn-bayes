@@ -49,6 +49,12 @@ class DataPreprocessing:
         std[std == 0] = 1
         self.X = (self.X - mean) / std
         return self
+    
+    def minmax_scale(self):
+        X_min = np.min(self.X, axis=0)
+        X_max = np.max(self.X, axis=0)
+        self.X = (self.X - X_min) / (X_max - X_min)
+        return self
 
     def train_test_split(self, test_size=0.2, seed=42):
         np.random.seed(seed)
