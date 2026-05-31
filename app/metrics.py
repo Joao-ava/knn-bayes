@@ -44,6 +44,12 @@ def f1_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
 
 def r2_score(y: np.ndarray, y_pred: np.ndarray):
+    y = np.asarray(y).reshape(-1)
+    y_pred = np.asarray(y_pred).reshape(-1)
+
+    if len(y) != len(y_pred):
+        return 0
+
     y_mean = np.mean(y)
     total = np.sum((y - y_mean) ** 2)
     if total <= 0: # evitar divisão por zero
