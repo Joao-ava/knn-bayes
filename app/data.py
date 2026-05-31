@@ -79,3 +79,39 @@ def load_fraud_detection():
     
     return X, y
 
+
+def load_melbourne_housing():
+    # https://www.openml.org/search?type=data&status=active&id=46077&sort=runs
+    filepath = DATA_PATH / 'melb_data.csv'
+    data = []
+    y = []
+    with open(filepath, 'r') as f:
+        for index, line in enumerate(f):
+            if index == 0:
+                continue
+
+            values = line.strip().split(',')
+            # Tentar pegar valores númericos
+            data.append(np.array([
+                values[2],
+                values[8],
+                values[11],
+                values[12] or 0,
+                values[13],
+                values[14] or 0,
+                values[15] or 0,
+                values[17],
+                values[18],
+                values[20],
+            ], dtype=float))
+            y.append(float(values[4]))
+
+    X = np.array(data)
+    y = np.array(y)
+    print(X.shape)
+
+    return X, y
+
+
+if __name__ == '__main__':
+    load_melbourne_housing()

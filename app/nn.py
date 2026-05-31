@@ -19,14 +19,14 @@ class Value:
 
         def _backward():
             if self.grad.shape == out.grad.shape:
-                self.grad += other.data * out.grad
+                self.grad += out.grad
             else:
-                self.grad += np.sum(other.data * out.grad, axis=0, keepdims=True)
+                self.grad += np.sum(out.grad, axis=0, keepdims=True)
 
             if other.grad.shape == out.grad.shape:
-                other.grad += self.data * out.grad
+                other.grad += out.grad
             else:
-                other.grad += np.sum(self.data * out.grad, axis=0, keepdims=True)
+                other.grad += np.sum(out.grad, axis=0, keepdims=True)
         
         out._backward = _backward
         return out
