@@ -67,3 +67,24 @@ def r2_score_adjusted(y: np.ndarray, y_pred: np.ndarray, p: int = 4991):
 
     value = (n - 1) / total
     return 1 - (1 - r2_score(y, y_pred)) * value
+
+
+def rss(y: np.ndarray, y_pred: np.ndarray):
+    """
+    Soma dos quadrados dos resíduos (RSS)
+    Argumentos:
+    - y: variável dependente
+    - y_pred: predição do modelo
+    """
+    return np.sum((y - y_pred) ** 2)
+
+
+def rmse(y: np.ndarray, y_pred: np.ndarray):
+    sum = np.sum((y - y_pred) ** 2)
+    n = len(y)
+    return np.sqrt(1/n * sum)
+
+
+def mae(y: np.ndarray, y_pred: np.ndarray):
+    n = len(y)
+    return 1/n * np.sum(np.abs(y - y_pred))

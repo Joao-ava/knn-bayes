@@ -7,7 +7,7 @@ from data import load_fraud_detection, load_santander, load_melbourne_housing
 from regression import MultiLinearRegression
 from kfold import kfold
 from knn import KNN
-from metrics import accuracy, precision, recall, f1_score, r2_score, r2_score_adjusted
+from metrics import accuracy, precision, recall, f1_score, r2_score, r2_score_adjusted, rss, rmse, mae
 from data_preprocessing import DataPreprocessing
 from naive_bayes import NaiveBayes, NaiveBayesMultiClass
 from nn import MLP, sigmoid, binary_cross_entropy, r2_loss, mse
@@ -49,7 +49,7 @@ regression_models = [
     ('linear_regression', lambda : MultiLinearRegression()),
     ('mlp_regression', make_regression_mlp),
 ]
-regression_metrics = [r2_score, r2_score_adjusted]
+regression_metrics = [r2_score, r2_score_adjusted, rss, rmse, mae]
 
 def train_classification_model(folds: int):
     print('Começando treinamento de classificadores')
@@ -142,6 +142,9 @@ def train_regressor_model(folds: int):
 
             metrics['r2_score'].append(r2_score(y_test, y_pred))
             metrics['r2_score_adjusted'].append(r2_score_adjusted(y_test, y_pred, p=columns_size))
+            metrics['rss'].append(rss(y_test, y_pred))
+            metrics['rmse'].append(rmse(y_test, y_pred))
+            metrics['mae'].append(mae(y_test, y_pred))
 
 
         model_metrics[model_name]['mean-time_fit'] = np.mean(metrics['time_fit'])
